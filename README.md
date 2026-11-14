@@ -3,7 +3,12 @@
 MangaXcat is a Windows desktop manga reader and library manager built with WPF and WebView2. 
  Ai coded ( cant code use that information how you would like )
 
- ## <img width="2559" height="1392" alt="Snímek obrazovky 2026-11-14 191544" src="https://github.com/user-attachments/assets/0bcd9f0f-0555-4f36-9625-5ac4c052b9f4" />
+ <img width="1247" height="813" alt="obrazek" src="https://github.com/user-attachments/assets/c531869f-5c3c-455d-b985-dbd5a180f78f" />
+
+
+
+
+
 
 ## Features
 
@@ -15,7 +20,7 @@ MangaXcat is a Windows desktop manga reader and library manager built with WPF a
 - Import manga links from MangaFire, ThunderScans, WEBTOON, and MANGA Plus.
 
 <img width="2553" height="1369" alt="Snímek obrazovky 2026-11-14 185316" src="https://github.com/user-attachments/assets/c3017831-ab80-4bb4-990a-8bc8d6f3a4f5" />
-
+## <img width="2559" height="1392" alt="Snímek obrazovky 2026-11-14 191544" src="https://github.com/user-attachments/assets/0bcd9f0f-0555-4f36-9625-5ac4c052b9f4" />
 ## Install and run
 
 MangaXcat currently provides source code rather than a prebuilt installer. To install it from a GitHub source ZIP:
