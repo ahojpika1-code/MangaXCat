@@ -1,14 +1,20 @@
 # MangaXcat
 
-MangaXcat is a Windows desktop manga reader and library manager built with WPF and WebView2.
+MangaXcat is a Windows desktop manga reader and library manager built with WPF and WebView2. 
+ Ai coded ( cant code use that information how you would like )
+
+ ## <img width="2559" height="1392" alt="Snímek obrazovky 2026-11-14 191544" src="https://github.com/user-attachments/assets/0bcd9f0f-0555-4f36-9625-5ac4c052b9f4" />
 
 ## Features
+
 
 - Discover MangaDex titles and browse English chapters.
 - Save favourites, manga links, and chapter reading progress locally.
 - Sync MangaDex favourites and read progress when connected to an account.
 - Open manga and source websites in in-app tabs.
 - Import manga links from MangaFire, ThunderScans, WEBTOON, and MANGA Plus.
+
+<img width="2553" height="1369" alt="Snímek obrazovky 2026-11-14 185316" src="https://github.com/user-attachments/assets/c3017831-ab80-4bb4-990a-8bc8d6f3a4f5" />
 
 ## Install and run
 
