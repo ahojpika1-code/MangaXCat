@@ -10,23 +10,34 @@ MangaXcat is a Windows desktop manga reader and library manager built with WPF a
 - Open manga and source websites in in-app tabs.
 - Import manga links from MangaFire, ThunderScans, WEBTOON, and MANGA Plus.
 
-## Build
+## Install and run
 
-Requirements:
+MangaXcat currently provides source code rather than a prebuilt installer. To install it from a GitHub source ZIP:
 
-- Windows 10 or later
-- Windows PowerShell
-- .NET Framework 4.8
-- `curl.exe`
-- Microsoft Edge WebView2 Runtime
+1. On the repository page, select **Code** > **Download ZIP**.
+2. Extract the ZIP to a folder you can write to, such as `Documents\MangaXcat`.
+3. Make sure the requirements below are installed.
+4. Double-click `Launch MangaXcat.bat`. On first launch, the script builds the app, downloads its build dependencies, creates a desktop shortcut, and starts MangaXcat.
 
-From the project directory, run:
+To build without launching, open PowerShell in the extracted folder and run:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-The script downloads the Microsoft WebView2 SDK and uBlock Origin Lite into ignored `packages/` and `extensions/` folders, then builds `MangaXcat.exe`. The generated executable and runtime DLLs are intentionally not tracked in this source-only repository.
+Then run `MangaXcat.exe`.
+
+### Requirements
+
+- Windows 10 or later
+- .NET Framework 4.8
+- Microsoft Edge WebView2 Runtime
+- Windows PowerShell and `curl.exe` (included with current Windows versions)
+- An internet connection for the first build and MangaDex browsing
+
+The build script downloads the Microsoft WebView2 SDK and uBlock Origin Lite into `packages/` and `extensions/`, then builds `MangaXcat.exe`. These generated files are intentionally excluded from the source repository.
+
+If Windows blocks the launcher, right-click `Launch MangaXcat.bat`, choose **Properties**, select **Unblock** if shown, then try again. Only run the app if you trust the source.
 
 ## Local data
 
