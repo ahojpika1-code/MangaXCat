@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11111a">
+  <title>Panel — your manga reading room</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11111a;
+      --panel: #191923;
+      --panel-raised: #20202c;
+      --line: #2b2b38;
+      --muted: #89899b;
+      --text: #f5f4fa;
+      --accent: #c5f36a;
+      --accent-ink: #171b10;
+      --lavender: #aaa1ff;
+      --danger: #ff8585;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); color: var(--text); }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 246px; flex: 0 0 246px; padding: 27px 16px 18px; border-right: 1px solid var(--line);
+      background: #15151e; display: flex; flex-direction: column; gap: 29px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px; font-size: 19px; font-weight: 750; letter-spacing: -.7px; }
+    .brand-mark { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 10px; background: var(--accent); color: var(--accent-ink); }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: .3px; }
+    .nav-label { padding: 0 11px; margin-bottom: 8px; color: #777789; font-size: 10px; font-weight: 700; letter-spacing: 1.15px; text-transform: uppercase; }
+    .nav-list { display: grid; gap: 4px; }
+    .nav-button, .source-button {
+      width: 100%; display: flex; align-items: center; gap: 11px; border: 0; border-radius: 9px;
+      padding: 10px 11px; background: transparent; color: #aaaaba; text-align: left; cursor: pointer; transition: .16s ease;
+    }
+    .nav-button:hover, .source-button:hover { background: #20202b; color: var(--text); }
+    .nav-button.active { background: #272832; color: var(--accent); }
+    .nav-button svg, .source-button svg { width: 17px; height: 17px; flex: 0 0 auto; }
+    .nav-button span, .source-button span { flex: 1; font-size: 13px; font-weight: 550; }
+    .count { color: var(--muted); font-size: 11px; }
+    .side-sources { display: grid; gap: 2px; }
+    .source-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--source-color, var(--lavender)); flex: 0 0 auto; }
+    .source-button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sidebar-bottom { margin-top: auto; }
+    .tip { padding: 13px; border: 1px solid #333342; border-radius: 11px; background: #1b1b26; }
+    .tip strong { display: block; margin-bottom: 5px; font-size: 11px; }
+    .tip p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .sidebar-foot { padding: 13px 10px 0; color: #696979; font-size: 10px; }
+
+    .main { min-width: 0; flex: 1; }
+    .topbar { height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 40px; border-bottom: 1px solid var(--line); }
+    .breadcrumbs { color: var(--muted); font-size: 12px; }
+    .breadcrumbs strong { color: #e5e4ec; font-weight: 600; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; top: 10px; left: 11px; width: 16px; height: 16px; color: #808092; }
+    .search { width: 220px; height: 37px; padding: 0 12px 0 35px; border: 1px solid var(--line); border-radius: 9px; outline: 0; background: #191923; color: var(--text); font-size: 12px; }
+    .search:focus, .field:focus { border-color: #727256; box-shadow: 0 0 0 3px #c5f36a12; }
+    .icon-button { width: 37px; height: 37px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 9px; background: #191923; color: #b7b7c5; cursor: pointer; }
+    .icon-button:hover { background: #252531; color: white; }
+    .icon-button svg { width: 16px; height: 16px; }
+    .primary-button, .secondary-button {
+      height: 37px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 0 13px; border: 0; border-radius: 9px; font-size: 12px; font-weight: 700; cursor: pointer; transition: .16s ease;
+    }
+    .primary-button { background: var(--accent); color: var(--accent-ink); }
+    .primary-button:hover { background: #d3fa82; transform: translateY(-1px); }
+    .primary-button svg, .secondary-button svg { width: 15px; height: 15px; }
+    .secondary-button { border: 1px solid var(--line); background: #20202b; color: #e6e5ed; }
+    .secondary-button:hover { background: #292936; }
+    .content { width: min(1120px, 100%); margin: 0 auto; padding: 35px 40px 60px; }
+    .eyebrow { color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: 1.6px; text-transform: uppercase; }
+    h1 { margin: 8px 0 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -1.35px; line-height: 1.13; }
+    .page-description { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .hero {
+      position: relative; overflow: hidden; min-height: 214px; display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; padding: 32px 38px; border: 1px solid #353441; border-radius: 16px;
+      background: radial-gradient(ellipse at 82% 55%, #c5f36a17 0, transparent 37%), linear-gradient(115deg, #21212c, #191923 68%);
+    }
+    .hero-copy { position: relative; z-index: 1; max-width: 510px; }
+    .hero h1 { max-width: 470px; font-size: clamp(29px, 4vw, 39px); }
+    .hero p { max-width: 430px; margin: 11px 0 20px; color: #a4a4b4; font-size: 13px; line-height: 1.65; }
+    .hero-art { position: relative; width: 185px; height: 150px; flex: 0 0 auto; margin-right: 12px; }
+    .book { position: absolute; top: 19px; width: 83px; height: 112px; border: 1px solid #ffffff37; border-radius: 5px 10px 10px 5px; box-shadow: 5px 10px 25px #0005; transform: rotate(-12deg); }
+    .book::before { content: ""; position: absolute; top: 9px; bottom: 9px; left: 8px; width: 3px; border-radius: 3px; background: #ffffff4b; }
+    .book-one { left: 20px; background: linear-gradient(155deg, #786ed0, #392d63 72%); }
+    .book-two { left: 63px; top: 11px; transform: rotate(7deg); background: linear-gradient(155deg, #badb70, #536535 75%); }
+    .book-three { left: 100px; top: 29px; transform: rotate(18deg); background: linear-gradient(155deg, #e89075, #723b50 75%); }
+    .book::after { content: "MANGA"; position: absolute; bottom: 15px; left: 15px; color: #fff; font-size: 8px; font-weight: 850; letter-spacing: 1px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 15px; margin: 30px 0 14px; }
+    .section-heading h2 { margin: 0; font-size: 17px; letter-spacing: -.4px; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .text-button { padding: 4px 0; border: 0; background: transparent; color: var(--accent); font-size: 11px; font-weight: 650; cursor: pointer; }
+    .source-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .source-card { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); transition: .16s ease; }
+    .source-card:hover { border-color: #494956; transform: translateY(-2px); }
+    .source-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .source-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: color-mix(in srgb, var(--source-color) 17%, transparent); color: var(--source-color); }
+    .source-icon svg { width: 18px; height: 18px; }
+    .source-tag { padding: 4px 7px; border-radius: 5px; background: #24242f; color: #a7a7b6; font-size: 9px; }
+    .source-card h3 { overflow: hidden; margin: 13px 0 4px; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .source-card p { margin: 0; color: var(--muted); font-size: 10px; }
+    .source-card-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 17px; }
+    .source-domain { overflow: hidden; color: #858596; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .open-source { width: 29px; height: 29px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid #383844; border-radius: 7px; background: #22222d; cursor: pointer; }
+    .open-source:hover { border-color: var(--accent); color: var(--accent); }
+    .open-source svg { width: 14px; height: 14px; }
+    .favorite-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .favorite-card { position: relative; overflow: hidden; min-height: 154px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+    .favorite-card::after { content: ""; position: absolute; right: -24px; bottom: -48px; width: 125px; height: 125px; border: 1px solid #ffffff12; border-radius: 50%; box-shadow: 0 0 0 15px #ffffff08, 0 0 0 31px #ffffff05; }
+    .favorite-card h3 { position: relative; z-index: 1; max-width: 90%; margin: 19px 0 4px; overflow-wrap: anywhere; font-size: 13px; }
+    .favorite-card p { position: relative; z-index: 1; margin: 0; color: var(--muted); font-size: 10px; }
+    .favorite-actions { position: absolute; right: 12px; bottom: 11px; z-index: 2; display: flex; gap: 6px; }
+    .small-action { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #3b3b48; border-radius: 7px; background: #22222d; color: #b8b8c5; cursor: pointer; }
+    .small-action:hover { color: var(--accent); }
+    .small-action.delete:hover { color: var(--danger); }
+    .small-action svg { width: 13px; height: 13px; }
+    .empty-state { padding: 33px 16px; border: 1px dashed #363644; border-radius: 12px; color: var(--muted); text-align: center; font-size: 12px; }
+    .empty-state strong { display: block; margin-bottom: 6px; color: #e9e8ef; font-size: 13px; }
+    .reader-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #15151e; }
+    .reader-toolbar { min-height: 57px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 13px; border-bottom: 1px solid var(--line); }
+    .reader-source { min-width: 0; display: flex; align-items: center; gap: 10px; }
+    .reader-source strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .reader-source small { display: block; margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .reader-controls { display: flex; flex: 0 0 auto; gap: 7px; }
+    .reader-controls .secondary-button { height: 31px; padding: 0 9px; font-size: 10px; }
+    .reader-frame-wrap { position: relative; height: min(69vh, 690px); min-height: 400px; background: #fff; }
+    .reader-frame { width: 100%; height: 100%; border: 0; background: white; }
+    .reader-note { padding: 10px 13px; border-top: 1px solid var(--line); color: #9292a2; font-size: 10px; line-height: 1.5; }
+    .source-select-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+    .source-select { padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); text-align: left; cursor: pointer; }
+    .source-select:hover { border-color: var(--accent); }
+    .source-select strong { display: block; margin: 8px 0 3px; font-size: 12px; }
+    .source-select small { color: var(--muted); font-size: 10px; }
+    .hidden { display: none !important; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: #08080dbb; backdrop-filter: blur(5px); }
+    .modal { width: min(420px, 100%); padding: 22px; border: 1px solid #393946; border-radius: 14px; background: #1b1b25; box-shadow: 0 22px 80px #0008; }
+    .modal-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .modal-head h2 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+    .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .modal-close { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; background: #22222d; cursor: pointer; }
+    .modal-close svg { width: 14px; height: 14px; }
+    .form-field { display: grid; gap: 7px; margin-bottom: 14px; }
+    .form-field label { color: #c9c9d4; font-size: 11px; font-weight: 600; }
+    .field { width: 100%; height: 39px; padding: 0 11px; border: 1px solid #383844; border-radius: 8px; outline: 0; background: #13131c; color: var(--text); font-size: 12px; }
+    .field::placeholder { color: #656575; }
+    .form-hint { color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .form-error { min-height: 16px; margin: -3px 0 10px; color: var(--danger); font-size: 10px; }
+    .modal-actions { display: flex; justify-content: end; gap: 8px; margin-top: 18px; }
+    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 20; max-width: min(380px, calc(100vw - 36px)); padding: 12px 15px; border: 1px solid #494958; border-radius: 9px; background: #23232e; color: #f0eff5; box-shadow: 0 8px 30px #0005; font-size: 12px; }
+    @media (max-width: 900px) {
+      .sidebar { width: 210px; flex-basis: 210px; }
+      .topbar { padding: 0 25px; }
+      .content { padding-right: 25px; padding-left: 25px; }
+      .hero-art { width: 145px; transform: scale(.85); transform-origin: center right; margin-right: 0; }
+      .favorite-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .app { display: block; padding-bottom: 62px; }
+      .sidebar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 5; width: 100%; height: 60px; padding: 5px 9px; border-top: 1px solid var(--line); border-right: 0; background: #171720; }
+      .brand, .nav-label, .side-sources, .sidebar-bottom { display: none; }
+      .sidebar > div:first-of-type { height: 100%; }
+      .nav-list { height: 100%; grid-template-columns: repeat(3, 1fr); align-items: center; }
+      .nav-button { min-height: 45px; flex-direction: column; justify-content: center; gap: 3px; padding: 5px 2px; }
+      .nav-button span { flex: initial; font-size: 9px; }
+      .nav-button svg { width: 17px; height: 17px; }
+      .nav-button .count { display: none; }
+      .main { min-height: calc(100vh - 60px); }
+      .topbar { height: 61px; gap: 8px; padding: 0 15px; }
+      .breadcrumbs { font-size: 10px; white-space: nowrap; }
+      .top-actions { gap: 7px; }
+      .search { width: min(34vw, 170px); height: 34px; }
+      .search-wrap svg { top: 9px; }
+      .top-actions > .primary-button { width: 35px; height: 35px; padding: 0; font-size: 0; }
+      .top-actions > .primary-button svg { width: 17px; height: 17px; }
+      .content { padding: 24px 15px 35px; }
+      .hero { min-height: 212px; padding: 25px 22px; }
+      .hero h1 { max-width: 290px; font-size: 29px; }
+      .hero p { max-width: 290px; font-size: 11px; }
+      .hero-art { position: absolute; right: -19px; bottom: -14px; opacity: .44; transform: scale(.72); }
+      .source-grid { grid-template-columns: 1fr; }
+      .source-card { padding: 13px; }
+      .source-card h3 { margin-top: 9px; }
+      .source-card-foot { margin-top: 10px; }
+      .source-select-grid { grid-template-columns: 1fr; }
+      .reader-frame-wrap { height: 67vh; min-height: 350px; }
+      .reader-toolbar { align-items: start; }
+      .reader-controls { flex-wrap: wrap; justify-content: end; }
+      .reader-controls .secondary-button { width: 32px; height: 32px; padding: 0; font-size: 0; }
+      .reader-controls .secondary-button svg { width: 15px; height: 15px; }
+    }
+    @media (max-width: 390px) {
+      .search { width: 120px; }
+      .favorite-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.8-1 5.5-.6 8 1.2v12c-2.5-1.8-5.2-2.2-8-1.2z"/><path d="M20 5.5c-2.8-1-5.5-.6-8 1.2v12c2.5-1.8 5.2-2.2 8-1.2z"/></svg></div>
+        <div>panel<small>YOUR MANGA READING ROOM</small></div>
+      </div>
+      <div>
+        <div class="nav-label">Workspace</div>
+        <div class="nav-list">
+          <button class="nav-button active" data-page="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg><span>Discover</span></button>
+          <button class="nav-button" data-page="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6c0 4.3-8.8 10-8.8 10S3.2 12.9 3.2 8.6A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.8 1.3Z"/></svg><span>Favourites</span><small class="count" id="nav-fav-count">0</small></button>
+          <button class="nav-button" data-page="reader"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M16 4v16"/></svg><span>Reader</span></button>
+        </div>
+      </div>
+      <div>
+        <div class="nav-label">Your sources</div>
+        <div class="side-sources" id="side-sources"></div>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="tip"><strong>A little heads-up</strong><p>Some manga sites don't allow embedded viewing. Use the ↗ button to open them in a new tab.</p></div>
+        <div class="sidebar-foot">Your links and favourites stay on this device.</div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumbs">Reading room&nbsp; / &nbsp;<strong id="breadcrumb">Discover</strong></div>
+        <div class="top-actions">
+          <label class="search-wrap" aria-label="Search favourites"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg><input class="search" id="search" type="search" placeholder="Find a favourite..." autocomplete="off"></label>
+          <button class="primary-button" id="add-favorite-top" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add favourite</button>
+        </div>
+      </header>
+      <section class="content" id="page-home">
+        <div class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">A home for your next chapter</div>
+            <h1>Your manga.<br>One cozy corner.</h1>
+            <p>Bring your favourite reading sites together, keep the good stuff close, and settle into your next story.</p>
+            <button class="primary-button" id="hero-browse" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>Explore sources</button>
+          </div>
+          <div class="hero-art" aria-hidden="true"><div class="book book-one"></div><div class="book book-two"></div><div class="book book-three"></div></div>
+        </div>
+        <div class="section-heading"><div><h2>Your reading sources</h2><p>Pick a source to open it in your reading room.</p></div><button class="text-button" id="add-source-inline" type="button">＋ Add a source</button></div>
+        <div class="source-grid" id="source-grid"></div>
+        <div class="section-heading"><div><h2>Saved for later</h2><p>Your personal shelf, always close at hand.</p></div><button class="text-button" id="view-library" type="button">View all →</button></div>
+        <div class="favorite-grid" id="home-favorites"></div>
+      </section>
+      <section class="content hidden" id="page-library">
+        <div class="eyebrow">Your personal shelf</div><h1>Favourites</h1>
+        <p class="page-description">Manga you want to keep close. Add a link to save it here for later.</p>
+        <div class="section-heading"><div><h2 id="library-title">Your shelf</h2><p id="library-subtitle">A little inspiration for your next read.</p></div></div>
+        <div class="favorite-grid" id="library-favorites"></div>
+      </section>
+      <section class="content hidden" id="page-reader">
+        <div id="reader-pick">
+          <div class="eyebrow">Settle in and read</div><h1>Your reading room</h1>
+          <p class="page-description">Choose a source to open it here. If a site blocks embedding, you can still open it directly in a new tab.</p>
+          <div class="source-select-grid" id="reader-source-grid"></div>
+        </div>
+        <div class="reader-panel hidden" id="reader-panel">
+          <div class="reader-toolbar">
+            <div class="reader-source"><span class="source-dot" id="reader-dot"></span><div><strong id="reader-title"></strong><small id="reader-url"></small></div></div>
+            <div class="reader-controls">
+              <button class="secondary-button" id="reader-reload" type="button" title="Reload source"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 17.5 6L20 12M4 12l2.5 6a7 7 0 0 0 11.9-3"/></svg>Reload</button>
+              <button class="secondary-button" id="reader-open" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>Open tab</button>
+              <button class="secondary-button" id="reader-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Sources</button>
+            </div>
+          </div>
+          <div class="reader-frame-wrap"><iframe class="reader-frame" id="reader-frame" title="Manga source reader" referrerpolicy="no-referrer" allow="fullscreen; clipboard-read; clipboard-write"></iframe></div>
+          <div class="reader-note">If the page appears blank or shows an embedding error, this source doesn't allow in-app display. Choose <strong>Open tab</strong> above to continue reading on its website.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="modal-backdrop hidden" id="modal-backdrop">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head"><div><h2 id="modal-title">Add a favourite</h2><p id="modal-description">Save a manga link to your personal shelf.</p></div><button class="modal-close" id="modal-close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button></div>
+      <form id="modal-form">
+        <div class="form-field"><label for="item-name">Name</label><input class="field" id="item-name" name="name" maxlength="80" placeholder="e.g. The manga you love" required></div>
+        <div class="form-field"><label for="item-url">Manga link</label><input class="field" id="item-url" name="url" type="url" placeholder="https://..." required><span class="form-hint">Paste the manga's page link. It will open in your reading room, or in a new tab if the site blocks embedding.</span></div>
+        <div class="form-field hidden" id="source-color-field"><label for="item-color">Accent colour</label><select class="field" id="item-color" name="color"><option value="#aaa1ff">Lavender</option><option value="#c5f36a">Lime</option><option value="#f18f76">Coral</option><option value="#72cddd">Sky blue</option><option value="#e7a6ce">Pink</option></select></div>
+        <div class="form-error" id="form-error" role="alert"></div>
+        <div class="modal-actions"><button class="secondary-button" id="modal-cancel" type="button">Cancel</button><button class="primary-button" id="modal-submit" type="submit">Save favourite</button></div>
+      </form>
+    </section>
+  </div>
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      const defaultSources = [
+        { id: "mangadex", name: "MangaDex", url: "https://mangadex.org/", color: "#f18f76", kind: "Manga library" },
+        { id: "thunderscans", name: "ThunderScans", url: "https://thunderscans.com/", color: "#aaa1ff", kind: "Manga source" },
+        { id: "mangafire", name: "MangaFire", url: "https://mangafire.to/home", color: "#c5f36a", kind: "Manga library" }
+      ];
+      const icons = {
+        book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c2.8-1 5.5-.6 8 1.2v12c-2.5-1.8-5.2-2.2-8-1.2z"/><path d="M20 5.5c-2.8-1-5.5-.6-8 1.2v12c2.5-1.8 5.2-2.2 8-1.2z"/></svg>',
+        external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>',
+        heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6c0 4.3-8.8 10-8.8 10S3.2 12.9 3.2 8.6A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.8 1.3Z"/></svg>',
+        trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>'
+      };
+      const colors = ["#aaa1ff", "#c5f36a", "#f18f76", "#72cddd", "#e7a6ce"];
+      const readList = (key, fallback) => {
+        try {
+          const value = JSON.parse(localStorage.getItem(key));
+          return Array.isArray(value) ? value : fallback;
+        } catch (error) {
+          console.error("Could not read saved app data:", error);
+          return fallback;
+        }
+      };
+      let sources = readList("panel.sources", defaultSources).filter(item => item && typeof item.id === "string" && typeof item.name === "string" && safeUrl(item.url));
+      if (!sources.length) sources = defaultSources;
+      let favorites = readList("panel.favorites", []).filter(item => item && typeof item.id === "string" && typeof item.name === "string" && safeUrl(item.url));
+      let activeSource = null;
+      let toastTimer;
+      const $ = id => document.getElementById(id);
+      const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+      function safeUrl(value) {
+        try { const parsed = new URL(value); return parsed.protocol === "https:" || parsed.protocol === "http:"; }
+        catch { return false; }
+      }
+      function save(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+        catch (error) { console.error("Could not save app data:", error); showToast("Couldn't save changes. Check that browser storage is available."); return false; }
+      }
+      function showToast(message) {
+        const toast = $("toast"); toast.textContent = message; toast.classList.remove("hidden");
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.add("hidden"), 3500);
+      }
+      function sourceById(id) { return sources.find(item => item.id === id); }
+      function sourceNameFor(url) {
+        try {
+          const hostname = new URL(url).hostname.replace(/^www\./, "");
+          const found = sources.find(item => new URL(item.url).hostname.replace(/^www\./, "") === hostname);
+          return found ? found.name : hostname;
+        } catch { return "Manga source"; }
+      }
+      function renderSources() {
+        $("source-grid").innerHTML = sources.map(source => `
+          <article class="source-card" style="--source-color:${escapeHtml(source.color || colors[0])}">
+            <div class="source-card-top"><div class="source-icon">${icons.book}</div><span class="source-tag">${escapeHtml(source.kind || "Custom source")}</span></div>
+            <h3>${escapeHtml(source.name)}</h3><p>Browse and read from this source.</p>
+            <div class="source-card-foot"><span class="source-domain">${escapeHtml(new URL(source.url).hostname)}</span><button class="open-source" type="button" data-open-source="${escapeHtml(source.id)}" aria-label="Open ${escapeHtml(source.name)}">${icons.external}</button></div>
+          </article>`).join("");
+        $("side-sources").innerHTML = sources.map(source => `<button class="source-button" type="button" data-open-source="${escapeHtml(source.id)}" title="Open ${escapeHtml(source.name)}"><i class="source-dot" style="--source-color:${escapeHtml(source.color || colors[0])}"></i><span>${escapeHtml(source.name)}</span>${icons.external}</button>`).join("");
+        $("reader-source-grid").innerHTML = sources.map(source => `<button class="source-select" type="button" data-open-source="${escapeHtml(source.id)}" style="--source-color:${escapeHtml(source.color || colors[0])}"><i class="source-dot" style="--source-color:${escapeHtml(source.color || colors[0])}"></i><strong>${escapeHtml(source.name)}</strong><small>${escapeHtml(new URL(source.url).hostname)}</small></button>`).join("");
+      }
+      function favoriteCard(item) {
+        const source = sourceNameFor(item.url);
+        const color = item.color || (sourceById(item.sourceId) || {}).color || colors[0];
+        return `<article class="favorite-card" style="--source-color:${escapeHtml(color)}">
+          <span class="source-dot" style="--source-color:${escapeHtml(color)}" aria-hidden="true"></span>
+          <h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(source)}</p>
+          <div class="favorite-actions"><button class="small-action" type="button" data-read-favorite="${escapeHtml(item.id)}" aria-label="Read ${escapeHtml(item.name)}">${icons.external}</button><button class="small-action delete" type="button" data-remove-favorite="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)}">${icons.trash}</button></div>
+        </article>`;
+      }
+      function renderFavorites() {
+        const query = $("search").value.trim().toLowerCase();
+        const matching = favorites.filter(item => `${item.name} ${sourceNameFor(item.url)}`.toLowerCase().includes(query));
+        $("nav-fav-count").textContent = favorites.length;
+        const empty = `<div class="empty-state"><strong>${query ? "No favourites match that search." : "Your shelf is ready for its first favourite."}</strong>${query ? "Try another search." : "Save a manga using its link to keep it close."}</div>`;
+        $("home-favorites").innerHTML = matching.length ? matching.slice(0, 4).map(favoriteCard).join("") : empty;
+        $("library-favorites").innerHTML = matching.length ? matching.map(favoriteCard).join("") : empty;
+        $("library-subtitle").textContent = `${favorites.length} ${favorites.length === 1 ? "manga" : "manga"} saved for later.`;
+      }
+      function navigate(page) {
+        const names = { home: "Discover", library: "Favourites", reader: "Reader" };
+        Object.keys(names).forEach(name => $("page-" + name).classList.toggle("hidden", name !== page));
+        document.querySelectorAll(".nav-button").forEach(button => button.classList.toggle("active", button.dataset.page === page));
+        $("breadcrumb").textContent = names[page];
+        $("search").classList.toggle("hidden", page !== "library" && page !== "home");
+        $("add-favorite-top").classList.toggle("hidden", page !== "library" && page !== "home");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      function openReader(source) {
+        if (!source || !safeUrl(source.url)) { showToast("That source link is invalid."); return; }
+        activeSource = source;
+        $("reader-title").textContent = source.name;
+        $("reader-url").textContent = source.url;
+        $("reader-dot").style.setProperty("--source-color", source.color || colors[0]);
+        $("reader-frame").src = source.url;
+        $("reader-pick").classList.add("hidden");
+        $("reader-panel").classList.remove("hidden");
+        navigate("reader");
+      }
+      function openFavorite(id) {
+        const item = favorites.find(favorite => favorite.id === id);
+        if (!item) return;
+        openReader({ id: item.sourceId || "favorite", name: item.name, url: item.url, color: item.color || (sourceById(item.sourceId) || {}).color || colors[0] });
+      }
+      function openModal(type) {
+        const isSource = type === "source";
+        $("modal-title").textContent = isSource ? "Add a source" : "Add a favourite";
+        $("modal-description").textContent = isSource ? "Add a manga site to your reading room." : "Save a manga link to your personal shelf.";
+        $("modal-submit").textContent = isSource ? "Add source" : "Save favourite";
+        $("source-color-field").classList.toggle("hidden", !isSource);
+        $("form-error").textContent = "";
+        $("modal-form").dataset.type = type;
+        $("modal-backdrop").classList.remove("hidden");
+        setTimeout(() => $("item-name").focus(), 0);
+      }
+      function closeModal() { $("modal-backdrop").classList.add("hidden"); $("modal-form").reset(); $("form-error").textContent = ""; }
+      function removeFavorite(id) {
+        const next = favorites.filter(item => item.id !== id);
+        if (next.length === favorites.length) return;
+        if (!save("panel.favorites", next)) return;
+        favorites = next; renderFavorites(); showToast("Removed from your favourites.");
+      }
+      document.addEventListener("click", event => {
+        const open = event.target.closest("[data-open-source]");
+        const read = event.target.closest("[data-read-favorite]");
+        const remove = event.target.closest("[data-remove-favorite]");
+        if (open) openReader(sourceById(open.dataset.openSource));
+        if (read) openFavorite(read.dataset.readFavorite);
+        if (remove) removeFavorite(remove.dataset.removeFavorite);
+      });
+      document.querySelectorAll(".nav-button").forEach(button => button.addEventListener("click", () => navigate(button.dataset.page)));
+      $("hero-browse").addEventListener("click", () => { document.querySelector("#source-grid").scrollIntoView({ behavior: "smooth", block: "center" }); });
+      $("view-library").addEventListener("click", () => navigate("library"));
+      $("add-favorite-top").addEventListener("click", () => openModal("favorite"));
+      $("add-source-inline").addEventListener("click", () => openModal("source"));
+      $("search").addEventListener("input", renderFavorites);
+      $("reader-back").addEventListener("click", () => { $("reader-frame").src = "about:blank"; activeSource = null; $("reader-panel").classList.add("hidden"); $("reader-pick").classList.remove("hidden"); });
+      $("reader-reload").addEventListener("click", () => { if (activeSource) $("reader-frame").src = activeSource.url; });
+      $("reader-open").addEventListener("click", () => { if (activeSource) window.open(activeSource.url, "_blank", "noopener,noreferrer"); });
+      $("modal-close").addEventListener("click", closeModal);
+      $("modal-cancel").addEventListener("click", closeModal);
+      $("modal-backdrop").addEventListener("click", event => { if (event.target === $("modal-backdrop")) closeModal(); });
+      document.addEventListener("keydown", event => { if (event.key === "Escape" && !$("modal-backdrop").classList.contains("hidden")) closeModal(); });
+      $("modal-form").addEventListener("submit", event => {
+        event.preventDefault();
+        const type = $("modal-form").dataset.type;
+        const name = $("item-name").value.trim();
+        const url = $("item-url").value.trim();
+        if (!name) { $("form-error").textContent = "Enter a name."; return; }
+        if (!safeUrl(url)) { $("form-error").textContent = "Enter a valid http or https link."; return; }
+        if (type === "source") {
+          if (sources.some(source => source.name.toLowerCase() === name.toLowerCase())) { $("form-error").textContent = "A source with that name already exists."; return; }
+          const source = { id: crypto.randomUUID(), name, url, color: $("item-color").value, kind: "Custom source" };
+          if (!save("panel.sources", [...sources, source])) return;
+          sources = [...sources, source]; renderSources(); closeModal(); showToast(`${name} added to your sources.`);
+        } else {
+          if (favorites.some(favorite => favorite.url === url)) { $("form-error").textContent = "That link is already in your favourites."; return; }
+          const matchingSource = sources.find(source => new URL(source.url).hostname === new URL(url).hostname);
+          const favorite = { id: crypto.randomUUID(), name, url, sourceId: matchingSource ? matchingSource.id : null, color: matchingSource ? matchingSource.color : colors[favorites.length % colors.length] };
+          if (!save("panel.favorites", [...favorites, favorite])) return;
+          favorites = [...favorites, favorite]; renderFavorites(); closeModal(); showToast(`${name} saved to your favourites.`);
+        }
+      });
+      renderSources(); renderFavorites();
+    })();
+  </script>
+</body>
+</html>
